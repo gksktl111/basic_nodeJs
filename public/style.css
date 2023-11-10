@@ -1,0 +1,16 @@
+body {
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  padding: 15px;
+  align-items: center;
+  background: rgb(232, 88, 88);
+}
+.nav a {
+  margin-right: 10px;
+}
+.logo {
+  font-weight: bold;
+}
