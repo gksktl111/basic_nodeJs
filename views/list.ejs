@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Document</title>
+  </head>
+  <body class="grey-bg">
+    <%- include('nav.ejs')%>
+    <form action="/write" method="post">
+      <button class="post__add">새 게시물 작성</button>
+    </form>
+    <div class="white-bg">
+      <% posts.forEach(post => { %>
+      <div class="list-box">
+        <h4><%= post.title %></h4>
+        <p><%= post.content %></p>
+      </div>
+      <% }); %>
+    </div>
+  </body>
+</html>

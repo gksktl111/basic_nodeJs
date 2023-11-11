@@ -6,11 +6,77 @@ body {
   display: flex;
   padding: 15px;
   align-items: center;
-  background: rgb(232, 88, 88);
+  background-color: rgb(54, 143, 245);
+
+  color: white;
 }
 .nav a {
   margin-right: 10px;
 }
 .logo {
   font-weight: bold;
+}
+
+.grey-bg {
+  background: #eee;
+}
+.white-bg {
+  background: white;
+  margin: 20px;
+  border-radius: 5px;
+}
+.list-box {
+  padding: 10px;
+  border-bottom: 1px solid#eee;
+}
+.list-box h4 {
+  font-size: 16px;
+  margin: 5px;
+}
+.list-box p {
+  font-size: 13px;
+  margin: 5px;
+  color: grey;
+}
+
+.post__add {
+  position: relative;
+  top: 10px;
+  left: 20px;
+  width: 200px;
+  height: 50px;
+
+  background-color: rgb(54, 143, 245);
+  border: none;
+  border-radius: 20px;
+
+  color: white;
+
+  font-size: 20px;
+  font-weight: bold;
+}
+
+input,
+div {
+  box-sizing: border-box;
+}
+.form-box {
+  background: white;
+  padding: 25px;
+  margin: 20px;
+  border-radius: 8px;
+}
+.form-box input {
+  padding: 10px;
+  font-size: 16px;
+  width: 100%;
+  border: 1px solid black;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+.form-box button {
+  padding: 10px;
+  border: none;
+  background: lightgrey;
+  border-radius: 5px;
 }
