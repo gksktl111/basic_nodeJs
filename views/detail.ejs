@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>Document</title>
+  </head>
+  <body class="grey-bg">
+    <%- include('nav.ejs')%>
+
+    <div class="detail__nav">
+      <div class="detail__edit">
+        <a href="/edit/<%= post._id%>">수정하기</a>
+      </div>
+
+      <div class="detail__delete" data-id="<%= post._id%>">삭제하기</div>
+    </div>
+
+    <div class="detail-bg">
+      <h4><%= post.title%></h4>
+      <p><%= post.content%></p>
+    </div>
+
+    <script>
+      document
+        .querySelector('.detail__delete')
+        .addEventListener('click', (e) => {
+          // 서버로 get 요청 그러나 새로고침은 안함 (ajax)
+          fetch('/delete', {
+            // method 를 통해 요청을 변경 가능
+            method: 'DELETE',
+            // 데이터를 보낼 수 도 있음 헤더 설정 입력후
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            // body에 데이터를 담으면 됨
+            // 오브젝트나 어레이를 넘길려면 JSON.stringify로 넘겨야 함
+            // body: '데이터~~',
+            body: JSON.stringify({ id: `${e.target.dataset.id}` }),
+          })
+            .then((response) => {
+              if (response.status === 200) {
+                // console.log(response.status);
+                window.location.href = '/list';
+              } else {
+                console.log('DELETE 요청 실패!');
+              }
+            })
+            .catch((error) => {
+              console.log('에러 발생 : ', error);
+            });
+        });
+    </script>
+  </body>
+</html>
