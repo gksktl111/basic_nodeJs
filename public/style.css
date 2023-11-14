@@ -12,7 +12,10 @@ body {
 }
 .nav a {
   margin-right: 10px;
+  color: white;
+  text-decoration: none;
 }
+
 .logo {
   font-weight: bold;
   text-decoration: none;
@@ -132,4 +135,34 @@ div {
   text-decoration: none;
   color: white;
   font-size: 20px;
+}
+
+.pagination {
+  display: flex;
+  width: 100%;
+
+  justify-content: center;
+  text-align: center;
+
+  font-size: 24px;
+}
+
+/* 가상 클래스 활용 : color 우선순위 때문에 사용*/
+.pagination a:not(.currentpage),
+.currentpage {
+  width: 50px;
+  text-decoration: none;
+  color: black;
+  cursor: pointer;
+  transition: all 300ms ease;
+}
+
+.currentpage {
+  color: white;
+  background-color: rgb(54, 143, 245);
+}
+
+.pagination a:hover {
+  color: white;
+  background-color: rgb(54, 143, 245);
 }
