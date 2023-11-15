@@ -4,6 +4,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 const methodOverride = require('method-override');
 const bcrypt = require('bcrypt');
 const MongoStore = require('connect-mongo');
+require('dotenv').config();
 
 app.use(methodOverride('_method'));
 app.use(express.static(__dirname + '/public'));
@@ -24,24 +25,23 @@ app.use(
     // 여기서 쿠키의 유효기간을 변경가능
     cookie: { maxAge: 60 * 60 * 1000 },
     store: MongoStore.create({
-      mongoUrl:
-        'mongodb+srv://gksktl111:AYya9Y7m2FqdLIFn@cluster0.dgak6l9.mongodb.net/?retryWrites=true&w=majority',
+      mongoUrl: process.env.DB_URL,
       dbName: 'forum',
     }),
   })
 );
+
 app.use(passport.session());
 
 let db;
-const url =
-  'mongodb+srv://gksktl111:AYya9Y7m2FqdLIFn@cluster0.dgak6l9.mongodb.net/?retryWrites=true&w=majority';
+const url = process.env.DB_URL;
 new MongoClient(url)
   .connect()
   .then((client) => {
     console.log('DB연결성공');
     db = client.db('forum');
 
-    app.listen(8080, () => {
+    app.listen(process.env.PORT, () => {
       console.log('  에서 서버 실행중');
     });
   })
