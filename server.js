@@ -30,8 +30,30 @@ app.use(
     }),
   })
 );
-
 app.use(passport.session());
+
+const { S3Client } = require('@aws-sdk/client-s3');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const s3 = new S3Client({
+  region: 'ap-northeast-2',
+  credentials: {
+    accessKeyId: process.env.S3_KEY,
+    secretAccessKey: process.env.S3_SECRET_KEY,
+  },
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'minku1234',
+    key: function (요청, file, cb) {
+      //업로드시 파일명 변경가능
+      // 파일명은 겹치면 안됨, 날짜 많이 사용
+      cb(null, Date.now().toString());
+    },
+  }),
+});
 
 let db;
 const url = process.env.DB_URL;
@@ -49,7 +71,26 @@ new MongoClient(url)
     console.log(err);
   });
 
+function loginCheck(요청, 응답, next) {
+  if (!요청.user) {
+    응답.send('로그인하세요 ');
+  }
+
+  // next()는 미들웨어 코드실행 끝났으니 다음으로 이동해주세요 라는뜻 대충 return같은거
+  next();
+}
+
+function inputCheck(요청, 응답, next) {}
+
 // 메인페이지에 접속시 반갑다 를 유저에게 보내줌
+// 미들웨어는 요청과 응답 사이에 실행됨 (여기선 logincheck)
+// 바로 함수를 만들어서도 사용 가능
+// [함수1, 함수2, 함수3] 을 통해 미들웨어 여러개 넣기도 가능
+// Q. 만약 API 100개에 미들웨어를 전부 적용 하고 싶다
+// app.use(loginCheck); 이거 사용이 이코드 밑에 있는 모든 api에 미들웨어를 적용함 순서가 중요
+// app.use('/url'.loginCheck); 또한 url에 제한 사항을 걸수있음 이런식으로 url을 넣으면 해당 url과
+// 하위 url모두에 적용함 이걸로 원하는 라우팅에만 적용 가능
+
 app.get('/', (요청, 응답) => {
   //   응답.send('반갑다');
   응답.sendFile(__dirname + '/index.html');
@@ -91,7 +132,23 @@ app.get('/write', (요청, 응답) => {
   응답.status(200).render('write.ejs');
 });
 
-app.post('/newpost', async (요청, 응답) => {
+// 미들웨어로 꽃아줌
+// name이 img1을 가진 이미지가 들어오면 s3에 자동 업로드 해줌
+// 만약 multiple 속성으로 여러장의 이미지를 받아 올때는
+// upload.array('img1', 최대이미지 개수) 로 사용 여기선 2개 초과시 업로드 안해줌
+app.post('/newpost', upload.single('img1'), async (요청, 응답) => {
+  // 또한 업로드 완료시 url을 생성해줌 그 url은 다음 코드로 반환 받을 수 있음
+  console.log(요청.file);
+
+  // 여러장 업로드시에는 요청.files로 받기
+
+  // 이미지 업로드 에러처리 방법
+  // 우선 미들웨어가 아닌 함수 내부에 만들어야함
+  // upload.single('img1')(요청, 응답, (error) => {
+  //   // 아래에 에러시 실행할 코드 실행
+  //   if (error) return 응답.send('업로드에러');
+  // });
+
   try {
     if (요청.body.title === '') {
       응답.send('제목 입력 안함');
@@ -99,6 +156,8 @@ app.post('/newpost', async (요청, 응답) => {
       await db.collection('post').insertOne({
         title: 요청.body.title,
         content: 요청.body.content,
+        // 이미지 파일 자체는 클라우드에 넣고 url만 db에 저장 후 가져다 쓰기
+        img: 요청.file.location,
       });
       응답.redirect('./list');
     }
@@ -300,7 +359,6 @@ app.post('/register', async (요청, 응답) => {
   // 10 정도로 하면 50ms정도 걸림
 
   // 유저네임 빈칸 검사
-  console.log(요청.body.username.length);
   if (요청.body.username.length >= 4) {
     // 유저네임 중복 검사
     const nameCheck = await db
