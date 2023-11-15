@@ -79,17 +79,19 @@ app.get('/list', async (요청, 응답) => {
     posts: data,
     postCount: Math.ceil(postCount / 5),
     currentPage: 1,
-    messageFromServer: 요청.user,
   });
 });
 
-app.post('/write', (요청, 응답) => {
-  응답.render('write.ejs');
+app.get('/write', (요청, 응답) => {
+  // 만약 로그인 정보가 없으면 401 있으면 200
+  if (!요청.user) {
+    return 응답.status(401).send('Unauthorized');
+  }
+  // 여기서 파일을 랜더함
+  응답.status(200).render('write.ejs');
 });
 
 app.post('/newpost', async (요청, 응답) => {
-  console.log(요청.body);
-
   try {
     if (요청.body.title === '') {
       응답.send('제목 입력 안함');
@@ -191,7 +193,6 @@ app.get('/list/:page', async (요청, 응답) => {
     posts: data,
     postCount: Math.ceil(postCount / 5),
     currentPage: 요청.params.page,
-    messageFromServer: 요청.user,
   });
 });
 
