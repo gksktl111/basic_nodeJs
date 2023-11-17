@@ -32,15 +32,6 @@
         </div>
         <% }); %>
       </div>
-
-      <div class="pagination">
-        <% for(let i = 1; i <= postCount; i++) {%> <% if(i == currentPage){%>
-        <a href="/list/<%= i%>" class="currentpage"> <%= i%> </a>
-        <%} else{%>
-        <a href="/list/<%= i%>"><%= i%></a>
-
-        <% } %> <% }%>
-      </div>
     </div>
   </body>
 </html>

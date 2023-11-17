@@ -390,3 +390,16 @@ app.post('/register', async (요청, 응답) => {
 
 // use의 미들웨어로 박으면 하위 라우트에서 저 route를 모두 사용 가능
 app.use('/', require('./routes/shop.js'));
+
+app.post('/search', async (요청, 응답) => {
+  let data = await db
+    .collection('post')
+    .find({ title: { $regex: 요청.body.search } })
+    .toArray();
+
+  let postCount = data.length;
+
+  응답.render('search.ejs', {
+    posts: data,
+  });
+});
