@@ -93,7 +93,7 @@ function inputCheck(요청, 응답, next) {}
 
 app.get('/', (요청, 응답) => {
   //   응답.send('반갑다');
-  응답.sendFile(__dirname + '/index.html');
+  응답.render('index.ejs');
 });
 
 app.get('/good', (요청, 응답) => {
@@ -157,8 +157,11 @@ app.post('/newpost', upload.single('img1'), async (요청, 응답) => {
         title: 요청.body.title,
         content: 요청.body.content,
         // 이미지 파일 자체는 클라우드에 넣고 url만 db에 저장 후 가져다 쓰기
-        img: 요청.file.location,
+        img: 요청.file ? 요청.file.location : '',
+        user: 요청.user._id,
+        username: 요청.user.username,
       });
+
       응답.redirect('./list');
     }
   } catch (error) {
@@ -232,7 +235,13 @@ app.put('/edit/:id', async (요청, 응답) => {
 
 app.delete('/delete', async (요청, 응답) => {
   try {
-    await db.collection('post').deleteOne({ _id: new ObjectId(요청.body.id) });
+    const a = await db.collection('post').deleteOne({
+      _id: new ObjectId(요청.body.id),
+      user: new ObjectId(요청.user._id),
+    });
+
+    console.log(a.deletedCount);
+
     응답.sendStatus(200);
   } catch (error) {
     응답.sendStatus(500);
@@ -392,12 +401,21 @@ app.post('/register', async (요청, 응답) => {
 app.use('/', require('./routes/shop.js'));
 
 app.post('/search', async (요청, 응답) => {
+  let 검색조건 = [
+    {
+      $search: {
+        index: 'title_index',
+        text: { query: 요청.body.search, path: 'title' },
+      },
+    },
+  ];
+
   let data = await db
     .collection('post')
-    .find({ title: { $regex: 요청.body.search } })
+    // $text : text 인덱스를 갖다씀
+    // $search : 해당 인덱스에서 검색을 함
+    .aggregate(검색조건)
     .toArray();
-
-  let postCount = data.length;
 
   응답.render('search.ejs', {
     posts: data,
