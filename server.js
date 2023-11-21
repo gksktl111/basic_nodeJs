@@ -4,6 +4,13 @@ const { MongoClient, ObjectId } = require('mongodb');
 const methodOverride = require('method-override');
 const bcrypt = require('bcrypt');
 const MongoStore = require('connect-mongo');
+const { DateTime } = require('luxon');
+
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+const server = createServer(app);
+const io = new Server(server);
+
 require('dotenv').config();
 
 app.use(methodOverride('_method'));
@@ -63,7 +70,7 @@ new MongoClient(url)
     console.log('DB연결성공');
     db = client.db('forum');
 
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log('  에서 서버 실행중');
     });
   })
@@ -158,8 +165,8 @@ app.post('/newpost', upload.single('img1'), async (요청, 응답) => {
         content: 요청.body.content,
         // 이미지 파일 자체는 클라우드에 넣고 url만 db에 저장 후 가져다 쓰기
         img: 요청.file ? 요청.file.location : '',
-        user: 요청.user._id,
-        username: 요청.user.username,
+        user_id: 요청.user._id,
+        user_name: 요청.user.username,
       });
 
       응답.redirect('./list');
@@ -183,11 +190,20 @@ app.get('/detail/:id', async (요청, 응답) => {
     // console.log(post);
     // console.log(요청.params.id);
 
+    const comments = await db
+      .collection('comments')
+      .find({
+        post_id: 요청.params.id,
+      })
+      .toArray();
+
+    console.log(comments);
+
     if (post == null) {
       throw new Error();
     }
 
-    응답.render('detail.ejs', { post: post });
+    응답.render('detail.ejs', { post: post, comments: comments });
   } catch (error) {
     console.log(error);
     // 400클라문제, 500서버문제
@@ -419,5 +435,97 @@ app.post('/search', async (요청, 응답) => {
 
   응답.render('search.ejs', {
     posts: data,
+  });
+});
+
+app.post('/newcomment', async (요청, 응답) => {
+  if (!요청.user) {
+    return 응답.send('로그인 먼저 하십쇼');
+  }
+
+  try {
+    if (요청.body.comment.trim() === '') {
+      응답.send('빈칸임');
+    } else {
+      await db.collection('comments').insertOne({
+        comment: 요청.body.comment,
+        post_id: 요청.body.postId,
+        writerId: new ObjectId(요청.user._id),
+        writer: 요청.user.username,
+      });
+      응답.redirect(`./detail/${요청.body.postId}`);
+    }
+  } catch (error) {
+    console.log(error);
+    요청.statusCode(500).send('에러남');
+  }
+});
+
+app.get('/chat-list', async (요청, 응답) => {
+  if (!요청.user) return 응답.send('로그인 먼저 하십쇼');
+
+  const chat_room_data = await db
+    .collection('chatroom')
+    .find({
+      member: 요청.user._id,
+    })
+    .toArray();
+
+  응답.render('chatList.ejs', { chat_room_data: chat_room_data });
+});
+
+app.get('/chat/:id/:name', async (요청, 응답) => {
+  // 글이 본인 글인 경우
+  if (요청.user._id.toString() === 요청.params.id) {
+    return 응답.send('본인 한테는 채팅할 수 없습니다');
+  }
+
+  const chat_log = await db.collection('chatroom').findOne({
+    $and: [{ member: 요청.user._id }, { member: new ObjectId(요청.params.id) }],
+  });
+
+  // 존재 X 새로운 채팅방 생성후 이동
+  if (chat_log == null) {
+    const koreaTime = DateTime.now().setZone('Asia/Seoul');
+    const formattedTime = koreaTime.toFormat('yyyy-MM-dd HH:mm:ss');
+
+    const chat = await db.collection('chatroom').insertOne({
+      member: [요청.user._id, new ObjectId(요청.params.id)],
+      title: `${요청.user.username} 님과 ${요청.params.name} 님의 채팅방`,
+      date: formattedTime,
+    });
+
+    응답.render('chat.ejs', { chat: chat });
+  }
+  // 채팅내역이 존재한다  채팅방으로 이동,
+  else {
+    응답.redirect(`/chat/${chat_log._id}`);
+  }
+});
+
+app.get('/chat/:id', async (요청, 응답) => {
+  if (!요청.user) return 응답.send('로그인 먼저 하셈');
+
+  console.log(요청.params.id);
+
+  const chat = await db.collection('chat').findOne({
+    _id: 요청.params.id,
+  });
+
+  console.log(chat);
+
+  응답.render('chat.ejs', { chat: chat });
+});
+
+// 유저가 웹소켓으로 연결을 할때마다 실행
+io.on('connection', (socket) => {
+  // 방 설정
+  socket.on('ask-join', (data) => {
+    socket.join(data);
+  });
+
+  socket.on('message', (data) => {
+    // 특정 방에 emit 할려면 to 사용
+    io.to(data.room).emit('broadcast', data.msg);
   });
 });

@@ -145,7 +145,8 @@ div {
 }
 
 .detail__edit,
-.detail__delete {
+.detail__delete,
+.detail__chat {
   position: relative;
   top: 10px;
   left: 20px;
@@ -165,8 +166,13 @@ div {
   left: 40px;
 }
 
+.detail__chat {
+  left: 60px;
+}
+
 .detail__edit a,
-.detail__delete {
+.detail__delete,
+.detail__chat a {
   text-decoration: none;
   color: white;
   font-size: 20px;
@@ -202,4 +208,62 @@ div {
 .pagination a:hover {
   color: white;
   background-color: rgb(54, 143, 245);
+}
+
+.comment__form {
+  position: relative;
+  width: 100%;
+  left: 20px;
+}
+
+.comment__form input {
+  width: 98%;
+  height: 50px;
+
+  outline: none;
+  padding: 20px;
+
+  font-size: 16px;
+
+  border-radius: 20px;
+  border: none;
+
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+}
+
+.comments__container {
+  position: relative;
+  width: 98%;
+  left: 20px;
+}
+
+.comment {
+  background-color: white;
+}
+
+.chat-screen {
+  width: 100%;
+}
+.chat-box {
+  margin-top: 15px;
+  display: flex;
+}
+.chat-box span {
+  padding: 10px;
+  background: #eee;
+}
+.mine {
+  justify-content: end;
+}
+.chat-input {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 5px;
+}
+.chat-button {
+  padding: 10px;
+  border: none;
+  background: lightgrey;
+  border-radius: 5px;
 }

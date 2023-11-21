@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script
+      src="https://kit.fontawesome.com/75b76eb5b2.js"
+      crossorigin="anonymous"
+    ></script>
+    <title>Document</title>
+  </head>
+  <body class="grey-bg">
+    <%- include('nav.ejs')%>
+
+    <div class="white-bg">
+      <% chat_room_data.forEach(room => { %>
+      <div class="list-box">
+        <a href="/chat/<%= room._id %>">
+          <h4><%= room.title %></h4>
+        </a>
+      </div>
+      <% }); %>
+    </div>
+  </body>
+</html>

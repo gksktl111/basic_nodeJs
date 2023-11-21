@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <title>Document</title>
+  </head>
+  <body class="grey-bg">
+    <%- include('nav.ejs')%>
+
+    <div class="detail-bg">
+      <div class="chat-screen">
+        <div class="chat-box"><span>안녕하세요</span></div>
+        <div class="chat-box"><span>안녕하세요</span></div>
+        <div class="chat-box mine"><span>안녕하세요</span></div>
+      </div>
+    </div>
+    <div class="chat-form">
+      <input class="chat-input" />
+      <button class="chat-button">전송</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4.7.2/client-dist/socket.io.min.js"></script>
+    <script>
+      const socket = io();
+
+      // room 조인
+      socket.emit('ask-join');
+
+      // 버튼 누르면 특정 방에 메시지 보내도록 부탁하기
+      document.querySelector('.chat-button').addEventListener('click', () => {
+        socket.emit('message', { msg: '반가워요', room: '1' });
+      });
+
+      // 해당 emit 받기
+      socket.on('broadcast', (data) => {
+        console.log(data);
+      });
+    </script>
+  </body>
+</html>
